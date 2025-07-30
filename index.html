@@ -24,7 +24,7 @@
     // Récupérer le paramètre 'filtre' dans l'URL
     const params = new URLSearchParams(window.location.search);
     const filtre = params.get('filtre');
-
+    
     // Charger les points depuis le JSON
     fetch('PointGPS.json')
       .then(response => response.json())
@@ -34,23 +34,18 @@
           const lat = points[code][0];
           const lon = points[code][1];
           const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
-        
-          // Créer le contenu du popup
           const popupContent = `<a href="${mapsUrl}" target="_blank">${code}</a>`;
-        
-          // Ajouter les marqueurs avec popup cliquable
-          L.marker(points[code])
-            .addTo(map)
-            .bindPopup(popupContent);
+    
+          L.marker(points[code]).addTo(map).bindPopup(popupContent);
         }
-        
-        // Si un filtre est présent, centrer et ouvrir le popup avec le lien Google Maps
+    
+        // 👉 On vérifie le filtre ici, une fois les points disponibles
         if (filtre && points[filtre]) {
           const lat = points[filtre][0];
           const lon = points[filtre][1];
           const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
           const popupContent = `<a href="${mapsUrl}" target="_blank">${filtre}</a>`;
-        
+    
           map.setView(points[filtre], 15);
           L.popup()
             .setLatLng(points[filtre])
@@ -59,6 +54,7 @@
         }
       })
       .catch(error => console.error("Erreur chargement JSON :", error));
+
   </script>
 </body>
 </html>
