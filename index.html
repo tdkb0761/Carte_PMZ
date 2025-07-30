@@ -17,6 +17,8 @@
     const params = new URLSearchParams(window.location.search);
     const filtre = params.get('filtre');
     const redir = params.get('redir');
+    console.log('filtre:', filtre);
+    console.log('redir:', redir);
 
     fetch('PointGPS21.json')
       .then(response => response.json())
