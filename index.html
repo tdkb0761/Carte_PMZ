@@ -31,8 +31,17 @@
       .then(points => {
         // Ajouter tous les marqueurs sur la carte
         for (const code in points) {
-          L.marker(points[code]).addTo(map).bindPopup(code);
+          const lat = points[code][0];
+          const lon = points[code][1];
+        
+          // Lien Google Maps basé sur les coordonnées
+          const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+        
+          L.marker(points[code])
+            .addTo(map)
+            .bindPopup(`<a href="${mapsUrl}" target="_blank">${code}</a>`);
         }
+
 
         // Si un filtre est présent, centrer sur ce point
         if (filtre && points[filtre]) {
