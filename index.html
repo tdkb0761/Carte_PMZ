@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Test Carte Leaflet</title>
+  <title>Carte Leaflet dynamique</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     #map { height: 100vh; width: 100vw; }
@@ -13,7 +13,7 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    // Initialiser la carte centrée sur la France
+    // Initialiser la carte
     const map = L.map('map').setView([46.5, 2.5], 6);
 
     // Ajouter le fond de carte OpenStreetMap
@@ -21,11 +21,29 @@
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    // Ajouter un seul marqueur pour tester
-    L.marker([46.968959, 4.683815])
-      .addTo(map)
-      .bindPopup("FI-21050-0000")
-      .openPopup();
+    // Récupérer le paramètre 'filtre' dans l'URL
+    const params = new URLSearchParams(window.location.search);
+    const filtre = params.get('filtre');
+
+    // Charger les points depuis le JSON
+    fetch('PointGPS.json')
+      .then(response => response.json())
+      .then(points => {
+        // Ajouter tous les marqueurs sur la carte
+        for (const code in points) {
+          L.marker(points[code]).addTo(map).bindPopup(code);
+        }
+
+        // Si un filtre est présent, centrer sur ce point
+        if (filtre && points[filtre]) {
+          map.setView(points[filtre], 15);
+          L.popup()
+            .setLatLng(points[filtre])
+            .setContent(filtre)
+            .openOn(map);
+        }
+      })
+      .catch(error => console.error("Erreur chargement JSON :", error));
   </script>
 </body>
 </html>
