@@ -2,18 +2,28 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Redirection Google Maps</title>
+  <title>Carte Leaflet dynamique</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    #map { height: 100vh; width: 100vw; }
+  </style>
 </head>
 <body>
-  <p>Redirection en cours...</p>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
+    // Récupérer les paramètres de l'URL
     const params = new URLSearchParams(window.location.search);
     const filtre = params.get('filtre');
+    const redir = params.get('redir'); // redirection ?
 
-    if (filtre) {
-      fetch('PointGPS21.json')
-        .then(response => response.json())
-        .then(points => {
+    // Charger les points depuis le JSON
+    fetch('PointGPS.json')
+      .then(response => response.json())
+      .then(points => {
+        // Si redirection demandée
+        if (filtre && redir === '1') {
           if (points[filtre]) {
             const [lat, lon] = points[filtre];
             const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
@@ -21,13 +31,43 @@
           } else {
             document.body.innerHTML = `<p>Code "${filtre}" introuvable.</p>`;
           }
-        })
-        .catch(() => {
-          document.body.innerHTML = "<p>Erreur de chargement des données.</p>";
-        });
-    } else {
-      document.body.innerHTML = "<p>Aucun code fourni dans l'URL.</p>";
-    }
+          return; // on arrête le script ici
+        }
+
+        // Sinon on affiche la carte Leaflet
+        const map = L.map('map').setView([46.5, 2.5], 6);
+
+        // fond de carte
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Ajouter tous les marqueurs
+        for (const code in points) {
+          const lat = points[code][0];
+          const lon = points[code][1];
+          const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+          const popupContent = `<a href="${mapsUrl}" target="_blank">${code}</a>`;
+          L.marker(points[code]).addTo(map).bindPopup(popupContent);
+        }
+
+        // Si filtre mais pas de redirection : zoom et popup
+        if (filtre && points[filtre]) {
+          const lat = points[filtre][0];
+          const lon = points[filtre][1];
+          const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+          const popupContent = `<a href="${mapsUrl}" target="_blank">${filtre}</a>`;
+
+          map.setView(points[filtre], 15);
+          L.popup()
+            .setLatLng(points[filtre])
+            .setContent(popupContent)
+            .openOn(map);
+        }
+      })
+      .catch(() => {
+        document.body.innerHTML = "<p>Erreur de chargement des données.</p>";
+      });
   </script>
 </body>
 </html>
