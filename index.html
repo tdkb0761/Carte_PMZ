@@ -2,59 +2,32 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Carte Leaflet dynamique</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <style>
-    #map { height: 100vh; width: 100vw; }
-  </style>
+  <title>Redirection Google Maps</title>
 </head>
 <body>
-  <div id="map"></div>
-
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <p>Redirection en cours...</p>
   <script>
-    // Initialiser la carte
-    const map = L.map('map').setView([46.5, 2.5], 6);
-
-    // Ajouter le fond de carte OpenStreetMap
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-
-    // Récupérer le paramètre 'filtre' dans l'URL
     const params = new URLSearchParams(window.location.search);
     const filtre = params.get('filtre');
-    
-    // Charger les points depuis le JSON
-    fetch('PointGPS21.json')
-      .then(response => response.json())
-      .then(points => {
-        // Ajouter tous les marqueurs sur la carte
-        for (const code in points) {
-          const lat = points[code][0];
-          const lon = points[code][1];
-          const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
-          const popupContent = `<a href="${mapsUrl}" target="_blank">${code}</a>`;
-    
-          L.marker(points[code]).addTo(map).bindPopup(popupContent);
-        }
-    
-        // 👉 On vérifie le filtre ici, une fois les points disponibles
-        if (filtre && points[filtre]) {
-          const lat = points[filtre][0];
-          const lon = points[filtre][1];
-          const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
-          const popupContent = `<a href="${mapsUrl}" target="_blank">${filtre}</a>`;
-    
-          map.setView(points[filtre], 15);
-          L.popup()
-            .setLatLng(points[filtre])
-            .setContent(popupContent)
-            .openOn(map);
-        }
-      })
-      .catch(error => console.error("Erreur chargement JSON :", error));
 
+    if (filtre) {
+      fetch('PointGPS21.json')
+        .then(response => response.json())
+        .then(points => {
+          if (points[filtre]) {
+            const [lat, lon] = points[filtre];
+            const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+            window.location.href = mapsUrl; // redirection immédiate
+          } else {
+            document.body.innerHTML = `<p>Code "${filtre}" introuvable.</p>`;
+          }
+        })
+        .catch(() => {
+          document.body.innerHTML = "<p>Erreur de chargement des données.</p>";
+        });
+    } else {
+      document.body.innerHTML = "<p>Aucun code fourni dans l'URL.</p>";
+    }
   </script>
 </body>
 </html>
