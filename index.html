@@ -19,7 +19,7 @@ const filtre = params.get('filtre'); // filtre par code
 const label = params.get('label');   // filtre par label
 const redir = params.get('redir');
 
-fetch('PointGPS.json')
+fetch('PointGPS21.json')
   .then(response => response.json())
   .then(points => {
     // 1. Si redirection directe (par code ou label)
