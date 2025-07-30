@@ -33,22 +33,28 @@
         for (const code in points) {
           const lat = points[code][0];
           const lon = points[code][1];
-        
-          // Lien Google Maps basé sur les coordonnées
           const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
         
+          // Créer le contenu du popup
+          const popupContent = `<a href="${mapsUrl}" target="_blank">${code}</a>`;
+        
+          // Ajouter les marqueurs avec popup cliquable
           L.marker(points[code])
             .addTo(map)
-            .bindPopup(`<a href="${mapsUrl}" target="_blank">${code}</a>`);
+            .bindPopup(popupContent);
         }
-
-
-        // Si un filtre est présent, centrer sur ce point
+        
+        // Si un filtre est présent, centrer et ouvrir le popup avec le lien Google Maps
         if (filtre && points[filtre]) {
+          const lat = points[filtre][0];
+          const lon = points[filtre][1];
+          const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+          const popupContent = `<a href="${mapsUrl}" target="_blank">${filtre}</a>`;
+        
           map.setView(points[filtre], 15);
           L.popup()
             .setLatLng(points[filtre])
-            .setContent(filtre)
+            .setContent(popupContent)
             .openOn(map);
         }
       })
