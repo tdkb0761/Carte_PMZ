@@ -38,9 +38,6 @@
           }
         }
         
-        if (locate === '1') {
-          locateControl.start();
-        }
         
         // Si redirection demandée
         if (redir === '1') {
@@ -72,7 +69,9 @@
             title: "Me localiser"
           }
         }).addTo(map);
-        
+        if (locate === '1') {
+          locateControl.start(); 
+        }
         for (const code in allPoints) {
           const [lat, lon, lbl] = allPoints[code];
           const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
