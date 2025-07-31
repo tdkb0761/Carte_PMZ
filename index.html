@@ -13,74 +13,78 @@
   <div id="map"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-const params = new URLSearchParams(window.location.search);
-const filtre = params.get('filtre'); // filtre par code
-const label = params.get('label');   // filtre par label
-const redir = params.get('redir');
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const filtre = params.get('filtre');
+    const label = params.get('label');
+    const redir = params.get('redir');
 
-fetch('PointGPS21.json')
-  .then(response => response.json())
-  .then(points => {
-    // 1. Si redirection directe (par code ou label)
-    if (redir === '1') {
-      let key = filtre || null;
+    // Récupération du chemin (département éventuel)
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
+    const dept = pathParts.at(-1).match(/^\d+$/) ? pathParts.at(-1) : null;
 
-      // Si filtre par label, on cherche le code associé
-      if (!key && label) {
-        key = Object.keys(points).find(code => points[code][2] === label);
-      }
+    fetch('PointGPS21.json')
+      .then(response => response.json())
+      .then(data => {
+        // 1. On rassemble tous les points ou ceux du département demandé
+        let points = {};
+        if (dept && data[dept]) {
+          points = data[dept];
+        } else {
+          for (const dpt in data) {
+            Object.assign(points, data[dpt]);
+          }
+        }
 
-      if (key && points[key]) {
-        const [lat, lon] = points[key];
-        window.location.href = `https://www.google.com/maps?q=${lat},${lon}`;
-      } else {
-        document.body.innerHTML = `<p>Code/label introuvable.</p>`;
-      }
-      return;
-    }
+        // 2. Si redirection demandée
+        if (redir === '1') {
+          let key = filtre || null;
+          if (!key && label) {
+            key = Object.keys(points).find(code => points[code][2] === label);
+          }
+          if (key && points[key]) {
+            const [lat, lon] = points[key];
+            window.location.href = `https://www.google.com/maps?q=${lat},${lon}`;
+          } else {
+            document.body.innerHTML = `<p>Code/label introuvable.</p>`;
+          }
+          return;
+        }
 
-    // 2. Sinon afficher carte
-    const map = L.map('map').setView([46.5, 2.5], 6);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+        // 3. Affichage de la carte
+        const map = L.map('map').setView([46.5, 2.5], 6);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
 
-    // 3. Ajouter marqueurs
-    for (const code in points) {
-      const [lat, lon, lbl] = points[code];
-      const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
-      const popupContent = `<b>${code}</b>` + 
-        (lbl ? `<br><i>${lbl}</i>` : "") +
-        `<br><a href="${mapsUrl}" target="_blank">Ouvrir dans Maps</a>`;
+        for (const code in points) {
+          const [lat, lon, lbl] = points[code];
+          const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+          const popup = `<b>${code}</b>` +
+            (lbl ? `<br><i>${lbl}</i>` : "") +
+            `<br><a href="${mapsUrl}" target="_blank">Ouvrir dans Maps</a>`;
+          L.marker([lat, lon]).addTo(map).bindPopup(popup);
+        }
 
-      L.marker([lat, lon]).addTo(map).bindPopup(popupContent);
-    }
+        // 4. Zoom sur un point si filtre actif
+        let key = filtre || null;
+        if (!key && label) {
+          key = Object.keys(points).find(code => points[code][2] === label);
+        }
 
-    // 4. Filtrage centré (par code ou label)
-    let key = filtre || null;
-
-    if (!key && label) {
-      key = Object.keys(points).find(code => points[code][2] === label);
-    }
-
-    if (key && points[key]) {
-      const [lat, lon, lbl] = points[key];
-      const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
-      const popupContent = `<b>${key}</b>` + 
-        (lbl ? `<br><i>${lbl}</i>` : "") +
-        `<br><a href="${mapsUrl}" target="_blank">Ouvrir dans Maps</a>`;
-
-      map.setView([lat, lon], 15);
-      L.popup()
-        .setLatLng([lat, lon])
-        .setContent(popupContent)
-        .openOn(map);
-    }
-  })
-  .catch(() => {
-    document.body.innerHTML = "<p>Erreur de chargement des données.</p>";
-  });
-</script>
+        if (key && points[key]) {
+          const [lat, lon, lbl] = points[key];
+          const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+          const popup = `<b>${key}</b>` +
+            (lbl ? `<br><i>${lbl}</i>` : "") +
+            `<br><a href="${mapsUrl}" target="_blank">Ouvrir dans Maps</a>`;
+          map.setView([lat, lon], 15);
+          L.popup().setLatLng([lat, lon]).setContent(popup).openOn(map);
+        }
+      })
+      .catch(() => {
+        document.body.innerHTML = "<p>Erreur de chargement des données.</p>";
+      });
+  </script>
 </body>
 </html>
