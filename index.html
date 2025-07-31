@@ -21,6 +21,7 @@
     const label = params.get('label');   // label texte
     const redir = params.get('redir');   // redirection Maps
     const dep = params.get('dep');       // département
+    const locate = params.get('locate'); // Localisation
 
     fetch('PointGPS.json')
       .then(response => response.json())
@@ -36,7 +37,11 @@
             Object.assign(allPoints, data[d]);
           }
         }
-
+        
+        if (locate === '1') {
+          locateControl.start();
+        }
+        
         // Si redirection demandée
         if (redir === '1') {
           let key = filtre || null;
@@ -60,7 +65,7 @@
         }).addTo(map);
         
         // Bouton de géolocalisation
-        L.control.locate({
+        const locateControl = L.control.locate({
           position: 'topleft',
           flyTo: true,
           strings: {
