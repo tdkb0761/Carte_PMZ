@@ -19,9 +19,7 @@
     const label = params.get('label');
     const redir = params.get('redir');
 
-    // Récupération du chemin (département éventuel)
-    const pathParts = window.location.pathname.split('/').filter(Boolean);
-    const dept = pathParts.at(-1).match(/^\d+$/) ? pathParts.at(-1) : null;
+    const dept = params.get('dep');
 
     fetch('PointGPS21.json')
       .then(response => response.json())
