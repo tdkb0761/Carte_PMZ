@@ -22,6 +22,7 @@
     const redir = params.get('redir');   // redirection Maps
     const dep = params.get('dep');       // département
     const locate = params.get('locate'); // Localisation
+    const mapType = params.get('map') || 'google'; // Type de carte (default = google)
 
     fetch('PointGPS.json')
       .then(response => response.json())
@@ -41,29 +42,21 @@
         
         // Si redirection demandée
         if (redir === '1') {
-          const mapType = params.get('map') || 'google'; // défaut : Google Maps
           let key = filtre || null;
-        
           if (!key && label) {
             key = Object.keys(allPoints).find(code => allPoints[code][2] === label);
           }
-        
+  
           if (key && allPoints[key]) {
             const [lat, lon] = allPoints[key];
-            let redirectUrl;
-        
-            if (mapType === 'waze') {
-              redirectUrl = `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`;
-            } else {
-              redirectUrl = `https://www.google.com/maps?q=${lat},${lon}`;
-            }
-        
+            const redirectUrl = (mapType === 'waze')
+              ? `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`
+              : `https://www.google.com/maps?q=${lat},${lon}`;
             window.location.href = redirectUrl;
-            return;
           } else {
             document.body.innerHTML = `<p>Code/label introuvable.</p>`;
-            return;
           }
+          return;
         }
 
         // Affichage carte
@@ -83,6 +76,7 @@
         if (locate === '1') {
           locateControl.start(); 
         }
+        
         for (const code in allPoints) {
           const [lat, lon, lbl] = allPoints[code];
           const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
@@ -91,6 +85,8 @@
             (lbl ? `<br><i>${lbl}</i>` : "") +
             `<br><a href="${mapsUrl}" target="_blank">📍 Google Maps</a>` +
             `<br><a href="${wazeUrl}" target="_blank">🧭 Waze</a>`;
+        
+          L.marker([lat, lon]).addTo(map).bindPopup(popupContent);
         }
 
         // Centrage + popup si filtre actif
@@ -118,4 +114,5 @@
   </script>
 </body>
 </html>
+
 
