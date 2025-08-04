@@ -83,8 +83,8 @@
           const wazeUrl = `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`;
           const popupContent = `<b>${code}</b>` + 
             (lbl ? `<br><i>${lbl}</i>` : "") +
-            `<br><a href="${mapsUrl}" target="_blank">📍 Google Maps</a>` +
-            `<br><a href="${wazeUrl}" target="_blank">🧭 Waze</a>`;
+            `<br><a href="${mapsUrl}" target="_blank">📍 Ouvrir dans Google Maps</a>` +
+            `<br><a href="${wazeUrl}" target="_blank">🧭 Ouvrir dans Waze</a>`;
         
           L.marker([lat, lon]).addTo(map).bindPopup(popupContent);
         }
@@ -94,18 +94,16 @@
         if (!key && label) {
           key = Object.keys(allPoints).find(code => allPoints[code][2] === label);
         }
-        if (key && allPoints[key]) {
-          const [lat, lon, lbl] = allPoints[key];
-          const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
-          const popupContent = `<b>${key}</b>` + 
-            (lbl ? `<br><i>${lbl}</i>` : "") +
-            `<br><a href="${mapsUrl}" target="_blank">Ouvrir dans Maps</a>`;
-          map.setView([lat, lon], 15);
-          L.popup()
-            .setLatLng([lat, lon])
-            .setContent(popupContent)
-            .openOn(map);
-        }
+      if (key && allPoints[key]) {
+        const [lat, lon, lbl] = allPoints[key];
+        const popupContent = `
+          <b>${key}</b>${lbl ? `<br><i>${lbl}</i>` : ""}
+          <br><a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank">Google Maps</a>
+          <br><a href="https://waze.com/ul?ll=${lat},${lon}&navigate=yes" target="_blank">Waze</a>
+        `;
+        map.setView([lat, lon], 15);
+        L.popup().setLatLng([lat, lon]).setContent(popupContent).openOn(map);
+      }
       })
       .catch(err => {
         console.error(err);
@@ -114,5 +112,6 @@
   </script>
 </body>
 </html>
+
 
 
