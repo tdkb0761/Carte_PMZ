@@ -41,13 +41,24 @@
         
         // Si redirection demandée
         if (redir === '1') {
+          const mapType = params.get('map') || 'google'; // défaut : Google Maps
           let key = filtre || null;
+        
           if (!key && label) {
             key = Object.keys(allPoints).find(code => allPoints[code][2] === label);
           }
+        
           if (key && allPoints[key]) {
             const [lat, lon] = allPoints[key];
-            window.location.href = `https://www.google.com/maps?q=${lat},${lon}`;
+            let redirectUrl;
+        
+            if (mapType === 'waze') {
+              redirectUrl = `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`;
+            } else {
+              redirectUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+            }
+        
+            window.location.href = redirectUrl;
             return;
           } else {
             document.body.innerHTML = `<p>Code/label introuvable.</p>`;
@@ -75,10 +86,11 @@
         for (const code in allPoints) {
           const [lat, lon, lbl] = allPoints[code];
           const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+          const wazeUrl = `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`;
           const popupContent = `<b>${code}</b>` + 
             (lbl ? `<br><i>${lbl}</i>` : "") +
-            `<br><a href="${mapsUrl}" target="_blank">Ouvrir dans Maps</a>`;
-          L.marker([lat, lon]).addTo(map).bindPopup(popupContent);
+            `<br><a href="${mapsUrl}" target="_blank">📍 Google Maps</a>` +
+            `<br><a href="${wazeUrl}" target="_blank">🧭 Waze</a>`;
         }
 
         // Centrage + popup si filtre actif
@@ -106,3 +118,4 @@
   </script>
 </body>
 </html>
+
