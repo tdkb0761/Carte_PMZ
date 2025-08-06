@@ -153,10 +153,8 @@
       
       // Instanciation du champ de recherche Leaflet-Search
       const searchControl = new L.Control.Search({
-        layer: L.layerGroup(),  // couche "vide" mais requise
-        propertyName: 'title',
+        position: 'topleft',
         sourceData: function(text, callback) {
-          // filtre manuellement nos données
           const results = {};
           searchData.forEach(entry => {
             if (entry.title.toLowerCase().includes(text.toLowerCase())) {
@@ -165,14 +163,13 @@
           });
           callback(results);
         },
-        marker: false,    // (on gère le marker nous-mêmes si besoin)
+        marker: false,
         moveToLocation: function(latlng, title, map) {
           map.setView(latlng, 15);
         },
-        textPlaceholder: "Rechercher un point..."
-      });
-      
-      searchControl.addTo(map);  
+        textPlaceholder: "Rechercher un point (Code ou Label)…"
+      }).addTo(map);
+        
       })
       .catch(err => {
         console.error(err);
@@ -181,6 +178,7 @@
   </script>
 </body>
 </html>
+
 
 
 
