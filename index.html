@@ -112,11 +112,8 @@
         map.setView([lat, lon], 15);
         L.popup().setLatLng([lat, lon]).setContent(popupContent).openOn(map);
       }
-      L.Control.geocoder({
-          defaultMarkGeocode: true
-      }).addTo(map);
+
   
-        
       })
       .catch(err => {
         console.error(err);
@@ -125,6 +122,7 @@
   </script>
 </body>
 </html>
+
 
 
 
