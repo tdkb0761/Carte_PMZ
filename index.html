@@ -5,6 +5,7 @@
   <title>Carte Leaflet - Multi-départements</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
   <style>
     #map { height: 100vh; width: 100vw; margin: 0; }
     body { margin: 0; }
@@ -15,6 +16,7 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
+  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
   <script>
     const params = new URLSearchParams(window.location.search);
     const filtre = params.get('filtre'); // code FI-...
@@ -104,7 +106,9 @@
         map.setView([lat, lon], 15);
         L.popup().setLatLng([lat, lon]).setContent(popupContent).openOn(map);
       }
-        
+      L.Control.geocoder({
+          defaultMarkGeocode: true
+      }).addTo(map);
   
         
       })
@@ -115,6 +119,7 @@
   </script>
 </body>
 </html>
+
 
 
 
