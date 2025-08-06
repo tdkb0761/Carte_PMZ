@@ -132,8 +132,8 @@
         const [lat, lon, lbl] = allPoints[key];
         const popupContent = `
           <b>${key}</b>${lbl ? `<br><i>${lbl}</i>` : ""}
-          <br><a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank">Google Maps</a>
-          <br><a href="https://waze.com/ul?ll=${lat},${lon}&navigate=yes" target="_blank">Waze</a>
+          <br><a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank">📍 Ouvrir dans Google Maps</a>
+          <br><a href="https://waze.com/ul?ll=${lat},${lon}&navigate=yes" target="_blank">🧭 Ouvrir dans Waze</a>
         `;
         map.setView([lat, lon], 15);
         L.popup().setLatLng([lat, lon]).setContent(popupContent).openOn(map);
@@ -148,6 +148,7 @@
   </script>
 </body>
 </html>
+
 
 
 
