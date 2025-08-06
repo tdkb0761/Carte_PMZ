@@ -75,6 +75,12 @@
             title: "Me localiser"
           }
         }).addTo(map);
+
+        L.Control.geocoder({
+          defaultMarkGeocode: true,
+          placeholder: "Rechercher une adresse…"
+        }).addTo(map);
+        
         if (locate === '1') {
           locateControl.start(); 
         }
@@ -119,6 +125,7 @@
   </script>
 </body>
 </html>
+
 
 
 
