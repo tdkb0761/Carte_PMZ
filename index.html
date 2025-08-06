@@ -76,14 +76,39 @@
           }
         }).addTo(map);
 
-        L.Control.geocoder({
-          defaultMarkGeocode: true,
+        const geocoder = L.Control.geocoder({
+          position: 'topleft',
+          defaultMarkGeocode: false,
           placeholder: "Rechercher une adresse…"
         }).addTo(map);
         
+        let geoMarker; // on stocke le marqueur
+
+        geocoder.on('markgeocode', function(e) {
+          const latlng = e.geocode.center;
+        
+          if (geoMarker) {
+            map.removeLayer(geoMarker); // on enlève l’ancien si déjà placé
+          }
+        
+          // Icône personnalisée (exemple rouge)
+          const redIcon = L.icon({
+            iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-red.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34]
+          });
+        
+          geoMarker = L.marker(latlng, {icon: redIcon}).addTo(map)
+                      .bindPopup(e.geocode.name)
+                      .openPopup();
+        
+          map.setView(latlng, 15);
+        });
         if (locate === '1') {
           locateControl.start(); 
         }
+        
         
         for (const code in allPoints) {
           const [lat, lon, lbl] = allPoints[code];
@@ -122,6 +147,7 @@
   </script>
 </body>
 </html>
+
 
 
 
