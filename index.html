@@ -156,6 +156,7 @@
       const searchControl = new L.Control.Search({
         position: 'topleft',
         sourceData: function(text, callback) {
+          console.log('Recherche :', text);
           const results = {};
           searchData.forEach(entry => {
             if (entry.title.toLowerCase().includes(text.toLowerCase())) {
@@ -179,6 +180,7 @@
   </script>
 </body>
 </html>
+
 
 
 
