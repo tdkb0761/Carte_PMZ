@@ -43,7 +43,6 @@
           }
         }
         
-        
         // Si redirection demandée
         if (redir === '1') {
           let key = filtre || null;
@@ -112,7 +111,7 @@
           locateControl.start(); 
         }
         
-        
+        // Ajout des marqueurs sur la carte
         for (const code in allPoints) {
           const [lat, lon, lbl] = allPoints[code];
           const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
@@ -130,47 +129,56 @@
         if (!key && label) {
           key = Object.keys(allPoints).find(code => allPoints[code][2] === label);
         }
-      if (key && allPoints[key]) {
-        const [lat, lon, lbl] = allPoints[key];
-        const popupContent = `
-          <b>${key}</b>${lbl ? `<br><i>${lbl}</i>` : ""}
-          <br><a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank">📍 Ouvrir dans Google Maps</a>
-          <br><a href="https://waze.com/ul?ll=${lat},${lon}&navigate=yes" target="_blank">🧭 Ouvrir dans Waze</a>
-        `;
-        map.setView([lat, lon], 15);
-        L.popup().setLatLng([lat, lon]).setContent(popupContent).openOn(map);
-      }
+        if (key && allPoints[key]) {
+          const [lat, lon, lbl] = allPoints[key];
+          const popupContent = `
+            <b>${key}</b>${lbl ? `<br><i>${lbl}</i>` : ""}
+            <br><a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank">📍 Ouvrir dans Google Maps</a>
+            <br><a href="https://waze.com/ul?ll=${lat},${lon}&navigate=yes" target="_blank">🧭 Ouvrir dans Waze</a>
+          `;
+          map.setView([lat, lon], 15);
+          L.popup().setLatLng([lat, lon]).setContent(popupContent).openOn(map);
+        }
 
-      // Construction d'un tableau de données pour la recherche
-      const searchData = [];
-      for (const code in allPoints) {
-        const [lat, lon, lbl] = allPoints[code];
-        searchData.push({
-          title: `${code} ${lbl || ""}`,
-          loc: [lat, lon]
-        });
-      }
-      console.log(searchData); // Vérifie que ce n'est pas vide
-      
-      // Instanciation du champ de recherche Leaflet-Search
-      const searchControl = new L.Control.Search({
-        position: 'topleft',
-        sourceData: function(text, callback) {
-          console.log('Recherche :', text);
-          const results = {};
-          searchData.forEach(entry => {
-            if (entry.title.toLowerCase().includes(text.toLowerCase())) {
-              results[entry.title] = entry.loc;
-            }
+        // Construction d'un tableau de données pour la recherche
+        const searchData = [];
+        for (const code in allPoints) {
+          const [lat, lon, lbl] = allPoints[code];
+          searchData.push({
+            title: lbl ? `${code} ${lbl}` : code,
+            loc: [lat, lon]
           });
-          callback(results);
-        },
-        marker: false,
-        moveToLocation: function(latlng, title, map) {
-          map.setView(latlng, 15);
-        },
-        textPlaceholder: "Rechercher un point (Code ou Labelpp)…"
-      }).addTo(map);
+        }
+        // Pour debug : rendre accessible dans la console
+        window.searchData = searchData;
+
+        // Instanciation du champ de recherche Leaflet-Search
+        let searchMarker;
+        const searchControl = new L.Control.Search({
+          position: 'topleft',
+          sourceData: function(text, callback) {
+            const results = {};
+            const searchText = text.toLowerCase().trim();
+            searchData.forEach(entry => {
+              if (entry.title.toLowerCase().includes(searchText)) {
+                results[entry.title] = entry.loc;
+              }
+            });
+            callback(results);
+          },
+          marker: false,
+          moveToLocation: function(latlng, title, map) {
+            map.setView(latlng, 15);
+            // Ajout d'un marqueur temporaire lors de la recherche
+            if (searchMarker) {
+              map.removeLayer(searchMarker);
+            }
+            searchMarker = L.marker(latlng).addTo(map)
+              .bindPopup(title)
+              .openPopup();
+          },
+          textPlaceholder: "Rechercher un point (Code ou Label)…"
+        }).addTo(map);
         
       })
       .catch(err => {
@@ -180,18 +188,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
