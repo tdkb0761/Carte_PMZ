@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-search@3.0.4/dist/leaflet-search.min.css" />
   <style>
     #map { height: 100vh; width: 100vw; margin: 0; }
     body { margin: 0; }
@@ -17,6 +18,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
   <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+  <script src="https://unpkg.com/leaflet-search@3.0.4/dist/leaflet-search.min.js"></script>
   <script>
     const params = new URLSearchParams(window.location.search);
     const filtre = params.get('filtre'); // code FI-...
@@ -139,7 +141,38 @@
         L.popup().setLatLng([lat, lon]).setContent(popupContent).openOn(map);
       }
 
-  
+      // Construction d'un tableau de données pour la recherche
+      const searchData = [];
+      for (const code in allPoints) {
+        const [lat, lon, lbl] = allPoints[code];
+        searchData.push({
+          title: `${code} ${lbl || ""}`,   // ce qui sera recherché
+          loc: [lat, lon]
+        });
+      }
+      
+      // Instanciation du champ de recherche Leaflet-Search
+      const searchControl = new L.Control.Search({
+        layer: L.layerGroup(),  // couche "vide" mais requise
+        propertyName: 'title',
+        sourceData: function(text, callback) {
+          // filtre manuellement nos données
+          const results = {};
+          searchData.forEach(entry => {
+            if (entry.title.toLowerCase().includes(text.toLowerCase())) {
+              results[entry.title] = entry.loc;
+            }
+          });
+          callback(results);
+        },
+        marker: false,    // (on gère le marker nous-mêmes si besoin)
+        moveToLocation: function(latlng, title, map) {
+          map.setView(latlng, 15);
+        },
+        textPlaceholder: "Rechercher un point..."
+      });
+      
+      searchControl.addTo(map);  
       })
       .catch(err => {
         console.error(err);
@@ -148,6 +181,7 @@
   </script>
 </body>
 </html>
+
 
 
 
