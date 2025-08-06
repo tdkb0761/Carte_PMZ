@@ -140,6 +140,27 @@
           L.popup().setLatLng([lat, lon]).setContent(popupContent).openOn(map);
         }
 
+
+        const testData = [
+          { title: "FI-21231-001X RAI PT 0129", loc: [47.3217298, 5.0552053] },
+          { title: "FI-21005-0000", loc: [47.174793, 5.165119] }
+        ];
+        
+        const testSearch = new L.Control.Search({
+          position: 'topleft',
+          sourceData: function(text, callback) {
+            const results = {};
+            testData.forEach(entry => {
+              if (entry.title.toLowerCase().includes(text.toLowerCase())) {
+                results[entry.title] = entry.loc;
+              }
+            });
+            callback(results);
+          },
+          marker: false,
+          textPlaceholder: "Test recherche…"
+        }).addTo(map);
+        /*
         // Construction d'un tableau de données pour la recherche
         const searchData = [];
         for (const code in allPoints) {
@@ -149,6 +170,9 @@
             loc: [lat, lon]
           });
         }
+
+        
+        
         // Pour debug : rendre accessible dans la console
         window.searchData = searchData;
 
@@ -157,6 +181,7 @@
         const searchControl = new L.Control.Search({
           position: 'topleft',
           sourceData: function(text, callback) {
+            console.log('Recherche demandée :', text);
             const results = {};
             const searchText = text.toLowerCase().trim();
             searchData.forEach(entry => {
@@ -179,7 +204,7 @@
           },
           textPlaceholder: "Rechercher un point (Code ou Label)…"
         }).addTo(map);
-        
+   */
       })
       .catch(err => {
         console.error(err);
@@ -188,3 +213,4 @@
   </script>
 </body>
 </html>
+
