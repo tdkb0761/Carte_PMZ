@@ -146,10 +146,11 @@
       for (const code in allPoints) {
         const [lat, lon, lbl] = allPoints[code];
         searchData.push({
-          title: `${code} ${lbl || ""}`,   // ce qui sera recherché
+          title: `${code} ${lbl || ""}`,
           loc: [lat, lon]
         });
       }
+      console.log(searchData); // Vérifie que ce n'est pas vide
       
       // Instanciation du champ de recherche Leaflet-Search
       const searchControl = new L.Control.Search({
@@ -167,7 +168,7 @@
         moveToLocation: function(latlng, title, map) {
           map.setView(latlng, 15);
         },
-        textPlaceholder: "Rechercher un point (Code ou Label)…"
+        textPlaceholder: "Rechercher un point (Code ou Labelpp)…"
       }).addTo(map);
         
       })
@@ -178,6 +179,7 @@
   </script>
 </body>
 </html>
+
 
 
 
