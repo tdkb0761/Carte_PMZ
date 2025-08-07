@@ -6,7 +6,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-search@3.0.4/dist/leaflet-search.min.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-search@2.9.9/dist/leaflet-search.min.css" />
   <style>
     #map { height: 100vh; width: 100vw; margin: 0; }
     body { margin: 0; }
@@ -18,7 +18,8 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
   <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-  <script src="https://unpkg.com/leaflet-search@3.0.4/dist/leaflet-search.min.js"></script>
+  <script src="https://unpkg.com/leaflet-search@2.9.7/dist/leaflet-search.min.js"></script>
+  
   <script>
     const params = new URLSearchParams(window.location.search);
     const filtre = params.get('filtre'); // code FI-...
@@ -139,73 +140,55 @@
           map.setView([lat, lon], 15);
           L.popup().setLatLng([lat, lon]).setContent(popupContent).openOn(map);
         }
-
-
-        const testData = [
-          { title: "FI-21231-001X RAI PT 0129", loc: [47.3217298, 5.0552053] },
-          { title: "FI-21005-0000", loc: [47.174793, 5.165119] }
-        ];
         
-        const testSearch = new L.Control.Search({
-          position: 'topleft',
-          sourceData: function(text, callback) {
-            const results = {};
-            testData.forEach(entry => {
-              if (entry.title.toLowerCase().includes(text.toLowerCase())) {
-                results[entry.title] = entry.loc;
-              }
-            });
-            callback(results);
-          },
-          marker: false,
-          textPlaceholder: "Test recherche…"
-        }).addTo(map);
-        /*
-        // Construction d'un tableau de données pour la recherche
-        const searchData = [];
-        for (const code in allPoints) {
-          const [lat, lon, lbl] = allPoints[code];
-          searchData.push({
-            title: lbl ? `${code} ${lbl}` : code,
-            loc: [lat, lon]
-          });
-        }
-
+        // 1. Préparer les données pour la recherche
+        const searchData = Object.entries(allPoints).map(([code, arr]) => ({
+          code,
+          lat: arr[0],
+          lon: arr[1],
+          label: arr[2] || ""
+        }));
         
+        let searchMarker = null;
         
-        // Pour debug : rendre accessible dans la console
-        window.searchData = searchData;
-
-        // Instanciation du champ de recherche Leaflet-Search
-        let searchMarker;
+        // 2. Ajouter le contrôle de recherche
         const searchControl = new L.Control.Search({
           position: 'topleft',
           sourceData: function(text, callback) {
-            console.log('Recherche demandée :', text);
             const results = {};
-            const searchText = text.toLowerCase().trim();
             searchData.forEach(entry => {
-              if (entry.title.toLowerCase().includes(searchText)) {
-                results[entry.title] = entry.loc;
+              // Recherche dans code OU dans le label optionnel
+              if (
+                entry.code.toLowerCase().includes(text.toLowerCase()) ||
+                entry.label.toLowerCase().includes(text.toLowerCase())
+              ) {
+                // Affichage dans la liste : code (label) si label existe, sinon juste code
+                const display = entry.label
+                  ? `${entry.code} (${entry.label})`
+                  : entry.code;
+                results[display] = [entry.lat, entry.lon];
               }
             });
-            callback(results);
+          callback(results);
           },
           marker: false,
-          moveToLocation: function(latlng, title, map) {
-            map.setView(latlng, 15);
-            // Ajout d'un marqueur temporaire lors de la recherche
-            if (searchMarker) {
-              map.removeLayer(searchMarker);
-            }
-            searchMarker = L.marker(latlng).addTo(map)
-              .bindPopup(title)
-              .openPopup();
-          },
-          textPlaceholder: "Rechercher un point (Code ou Label)…"
-        }).addTo(map);
-   */
-      })
+          textPlaceholder: "Recherche code ou libellé…",
+          minLength: 1,
+          autoType: false,
+          firstTipSubmit: true
+        })
+        .on('search:locationfound', function(e) {
+          if (searchMarker) {
+            map.removeLayer(searchMarker);
+          }
+          searchMarker = L.marker(e.latlng).addTo(map)
+            .bindPopup(e.text)
+            .openPopup();
+          map.setView(e.latlng, 15);
+        })
+        .addTo(map);        
+  
+        })
       .catch(err => {
         console.error(err);
         document.body.innerHTML = "<p>Erreur de chargement des données.</p>";
@@ -213,4 +196,5 @@
   </script>
 </body>
 </html>
+
 
