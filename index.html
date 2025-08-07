@@ -143,11 +143,12 @@
         
         // 1. Préparer les données pour la recherche
         const testData = Object.entries(allPoints).map(([code, arr]) => ({
+          code,
+          label: arr[2] || "",
           title: arr[2] ? `${code} ${arr[2]}` : code,
           loc: [arr[0], arr[1]]
         }));
-
-        console.log(testData)
+        
         let searchMarker = null;
         
         const searchControl = new L.Control.Search({
@@ -155,14 +156,22 @@
           sourceData: function(text, callback) {
             const results = {};
             testData.forEach(entry => {
-              if (entry.title.toLowerCase().includes(text.toLowerCase())) {
-                results[entry.title] = entry.loc;
-              }
+              results[entry.title] = { loc: entry.loc, title: entry.title };
             });
             callback(results);
           },
+          filterData: function(text, records) {
+            var ret = {};
+            text = text.toLowerCase();
+            for (var key in records) {
+              if (key.toLowerCase().includes(text)) {
+                ret[key] = records[key];
+              }
+            }
+            return ret;
+          },
           marker: false,
-          textPlaceholder: "Recherche code ou libellé…",
+          textPlaceholder: "Test recherche…",
           minLength: 1,
           autoType: false,
           firstTipSubmit: true
@@ -171,12 +180,27 @@
           if (searchMarker) {
             map.removeLayer(searchMarker);
           }
+          const found = testData.find(entry =>
+            entry.loc[0] === e.latlng.lat && entry.loc[1] === e.latlng.lng
+          );
+          let popupContent = "";
+          if (found) {
+            const mapsUrl = `https://www.google.com/maps?q=${found.loc[0]},${found.loc[1]}`;
+            const wazeUrl = `https://waze.com/ul?ll=${found.loc[0]},${found.loc[1]}&navigate=yes`;
+            popupContent = `<b>${found.code}</b>` +
+              (found.label ? `<br><i>${found.label}</i>` : "") +
+              `<br><a href="${mapsUrl}" target="_blank">📍 Ouvrir dans Google Maps</a>` +
+              `<br><a href="${wazeUrl}" target="_blank">🧭 Ouvrir dans Waze</a>`;
+          } else {
+            popupContent = e.text;
+          }
           searchMarker = L.marker(e.latlng).addTo(map)
-            .bindPopup(e.text)
+            .bindPopup(popupContent)
             .openPopup();
-          map.setView(e.latlng, 15);
+          map.setView(e.latlng, 14);
         })
-        .addTo(map);  
+        .addTo(map);
+
   
         })
       .catch(err => {
@@ -186,6 +210,7 @@
   </script>
 </body>
 </html>
+
 
 
 
