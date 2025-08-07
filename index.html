@@ -153,26 +153,16 @@
         const searchControl = new L.Control.Search({
           position: 'topleft',
           sourceData: function(text, callback) {
-            console.log('Recherche demandée :', text);
             const results = {};
             testData.forEach(entry => {
-              results[entry.title] = { loc: entry.loc, title: entry.title };
+              if (entry.title.toLowerCase().includes(text.toLowerCase())) {
+                results[entry.title] = entry.loc;
+              }
             });
             callback(results);
           },
-          filterData: function(text, records) {
-            // Recherche "contient" au lieu de "commence par"
-            var ret = {};
-            text = text.toLowerCase();
-            for (var key in records) {
-              if (key.toLowerCase().includes(text)) {
-                ret[key] = records[key];
-              }
-            }
-            return ret;
-          },
           marker: false,
-          textPlaceholder: "Test recherche…",
+          textPlaceholder: "Recherche code ou libellé…",
           minLength: 1,
           autoType: false,
           firstTipSubmit: true
@@ -181,10 +171,12 @@
           if (searchMarker) {
             map.removeLayer(searchMarker);
           }
-          searchMarker = L.marker(e.latlng).addTo(map).bindPopup(e.text).openPopup();
-          map.setView(e.latlng, 14);
+          searchMarker = L.marker(e.latlng).addTo(map)
+            .bindPopup(e.text)
+            .openPopup();
+          map.setView(e.latlng, 15);
         })
-        .addTo(map);       
+        .addTo(map);  
   
         })
       .catch(err => {
@@ -194,6 +186,7 @@
   </script>
 </body>
 </html>
+
 
 
 
