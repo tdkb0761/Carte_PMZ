@@ -143,11 +143,10 @@
         
         // 1. Préparer les données pour la recherche
         const testData = Object.entries(allPoints).map(([code, arr]) => ({
-          code,
-          lat: arr[0],
-          lon: arr[1],
-          label: arr[2] || ""
+          title: arr[2] ? `${code} ${arr[2]}` : code,
+          loc: [arr[0], arr[1]]
         }));
+
         console.log(testData)
         let searchMarker = null;
         
@@ -195,6 +194,7 @@
   </script>
 </body>
 </html>
+
 
 
 
